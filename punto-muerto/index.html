@@ -1,35 +1,1991 @@
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║  SIMULADOR DE PUNTO MUERTO v3.6 (versión estable y validada)  ║
+╠══════════════════════════════════════════════════════════════╣
+║  Desarrollado por: Francisco Mondéjar                        ║
+║  Concepto base: "Complemento Simulador"                       ║
+║  Características:                                             ║
+║   • Cálculos en tiempo real con representación gráfica.       ║
+║   • Áreas sombreadas de beneficio, pérdida y margen seguridad.║
+║   • Modos "Básico" y "Avanzado" con análisis didáctico.       ║
+║   • Exportación de informe (texto, CSV, imagen).              ║
+║   • Campos de identificación (proyecto, alumno, fecha).       ║
+║   • Licencia: Creative Commons BY-SA 4.0                      ║
+║                                                              ║
+║  Autoría: Francisco Mondéjar – CC BY-SA 4.0 (2025)            ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulador: Punto muerto</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f8fa;
-      color: #222;
-      margin: 40px;
-      text-align: center;
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Simulador de Punto Muerto ❤️ v3.6.1</title>
+<style>
+  body {
+    font-family: system-ui, sans-serif;
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1.5rem;
+    border: 1px solid #e0d8c8;
+    border-radius: 12px;
+    background: #fdf6e3;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: fadeIn 1s ease;
+
+  }
+
+  h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .mode-row {
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:1rem;
+    font-size:.9rem;
+    margin-bottom:1rem;
+    border:1px solid #bbb;
+    background:#fafafa;
+    border-radius:8px;
+    padding:.5rem .75rem;
+  }
+  .mode-row label {
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+    font-size:.9rem;
+    cursor:pointer;
+  }
+  .mode-title {
+    font-weight:600;
+    font-size:.8rem;
+    text-transform:uppercase;
+    color:#444;
+  }
+  .mode-desc {
+    font-size:.75rem;
+    color:#666;
+    line-height:1.3;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .small-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .mini-field {
+    display:flex;
+    flex-direction:column;
+    font-size:.8rem;
+  }
+
+  .mini-field label {
+    font-size:.7rem;
+    color:#444;
+    margin-bottom:.25rem;
+  }
+
+  .mini-field input,
+  .mini-field select {
+    font-size:.8rem;
+    padding:.4rem .5rem;
+    border:1px solid #888;
+    border-radius:6px;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: .5rem 0;
+    gap: .5rem;
+  }
+  label { flex: 1; font-size: .9rem; }
+  input[type="number"] {
+    flex: 1;
+    padding: .4rem .6rem;
+    font-size: 1rem;
+  }
+
+  .button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: .75rem;
+  }
+
+  button {
+    padding: .6rem 1rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #444;
+    background: #f5f5f5;
+    cursor: pointer;
+  }
+  button:hover { background: #eee; }
+
+  .card {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid #aaa;
+    background: #fff;
+  }
+
+  .section-title {
+    font-weight:600;
+    font-size:.8rem;
+    text-transform:uppercase;
+    color:#444;
+    border-bottom:1px solid #ddd;
+    margin-top:.75rem;
+    margin-bottom:.5rem;
+    padding-bottom:.25rem;
+  }
+
+  .result-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: .9rem;
+    margin: .3rem 0;
+    font-family: Consolas, monospace;
+  }
+
+  .status { font-weight: 600; }
+
+  #diagnosticoBox {
+    margin-top:1rem;
+    padding:0.75rem 1rem;
+    border-radius:8px;
+    border:1px solid #999;
+    font-size:.9rem;
+    line-height:1.4;
+    background:#fafafa;
+    font-family: system-ui, sans-serif;
+    white-space: pre-line;
+  }
+
+  .right-side {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+  }
+
+  .graph-panel {
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+  }
+
+  .legend {
+    font-size: .8rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: .5rem; }
+
+  .color-box {
+    width: 14px; height: 14px; border-radius: 3px; border: 1px solid #000;
+  }
+
+  .ingresos-color { background-color: rgba(0,150,0,0.6); }
+  .costesTotales-color { background-color: rgba(200,0,0,0.6); }
+  .cf-color { background-color: rgba(80,80,80,0.9); }
+  .cv-color { background-color: rgba(255,165,0,0.6); }
+  .pm-color { background-color: rgba(0,0,200,0.6); }
+  .ms-color { background-color: rgba(0,200,150,0.3); border-color: rgba(0,200,150,0.6); }
+  .zonaLoss-color { background-color: rgba(255,0,0,0.15); border-color: rgba(255,0,0,0.4); }
+  .zonaProfit-color { background-color: rgba(0,200,0,0.15); border-color: rgba(0,200,0,0.4); }
+
+  .make-color-int { background-color: rgba(0,0,150,0.6); border-color: rgba(0,0,150,0.9); }
+  .make-color-ext { background-color: rgba(150,0,150,0.6); border-color: rgba(150,0,150,0.9); }
+  .make-qprev { background-color: rgba(80,80,80,0.8); border-color: rgba(80,80,80,0.8); }
+  .make-qindif { background-color: rgba(200,120,0,0.8); border-color: rgba(200,120,0,0.8); }
+
+  canvas {
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .kpi-card {
+    border: 1px solid #aaa;
+    border-radius: 10px;
+    padding: 1rem;
+    font-size: .9rem;
+    line-height: 1.4;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .kpi-block-title {
+    font-weight:600;
+    font-size:.8rem;
+    text-transform:uppercase;
+    color:#444;
+    border-bottom:1px solid #ddd;
+    padding-bottom:.25rem;
+    margin-bottom:.5rem;
+  }
+
+  .kpi-line {
+    font-family: Consolas, monospace;
+    display: flex;
+    justify-content: space-between;
+    font-size: .85rem;
+    margin-bottom: .4rem;
+  }
+
+  .bar-wrapper {
+    width: 100%;
+    height: 14px;
+    border-radius: 6px;
+    background: #eee;
+    border: 1px solid #bbb;
+    overflow: hidden;
+  }
+
+  .bar-fill-capacidad {
+    height: 100%;
+    background: rgba(0,150,0,0.5);
+    width: 0%;
+    transition: width .3s ease;
+  }
+
+  .bar-fill-vacio {
+    height: 100%;
+    background: rgba(200,0,0,0.4);
+    width: 0%;
+    transition: width .3s ease;
+  }
+
+  .bar-label {
+    font-size:.75rem;
+    font-family: system-ui, sans-serif;
+    color:#444;
+    margin-top:.25rem;
+    text-align:right;
+  }
+
+  #informeWrapper {
+    margin-top: 2rem;
+    border: 1px solid #aaa;
+    border-radius: 10px;
+    padding: 1rem;
+    background: #fff;
+  }
+
+  #informeHeaderRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: .5rem;
+  }
+
+  #informeHeaderRow h2 {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  #informeTxt {
+    width: 100%;
+    min-height: 260px;
+    font-family: "Courier New", Consolas, monospace;
+    font-size: .9rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: .75rem;
+    background: #fafafa;
+  }
+
+  footer {
+    text-align:center;
+    margin-top:2rem;
+    font-size:0.8rem;
+    color:#555;
+  }
+
+  footer img {
+    vertical-align:middle;
+    height:20px;
+    border:none;
+  }
+
+  .oculto-basico {
+    display:none !important;
+  }
+
+  
+  /* .soloavanzado existe como clase en el HTML/JS,
+  pero no necesitamos declararla en CSS si no añade estilo */
+  
+  
+
+  /* ← aquí corregimos la sintaxis @media */
+  @media (max-width:1050px){
+    .right-side {
+      grid-template-columns: 1fr;
     }
-    h1 {
-      color: #0a558c;
+  }
+
+  @media (max-width:950px){
+    .layout {
+      grid-template-columns: 1fr;
     }
-    .info {
-      margin-top: 20px;
-      padding: 10px 20px;
-      background: #eaf2fa;
-      border-radius: 10px;
-      display: inline-block;
+    .right-side {
+      grid-template-columns: 1fr;
     }
-  </style>
+    .small-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  footer {
+  margin-top: 2rem;
+  border-top: 1px solid #ccc;
+  padding-top: 1rem;
+  background: #fafafa;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  text-align: center;
+}
+
+.footer-logo {
+  height: 55px;
+  width: auto;
+  border-radius: 50%;
+}
+
+.footer-text {
+  font-size: 0.9rem;
+  color: #333;
+  line-height: 1.4;
+}
+
+.footer-text a {
+  color: #005ca9;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer-text a:hover {
+  text-decoration: underline;
+}
+
+.cc-icon {
+  height: 31px;
+  width: auto;
+  border: none;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+</style>
 </head>
 <body>
-  <h1>🧩 Simulador: Punto muerto</h1>
-  <p class="info">
-    Este será el primer simulador interactivo del laboratorio.<br>
-    Aquí podrás calcular el punto muerto de una empresa y visualizar la zona de beneficio y pérdida.
+
+<!-- Pantalla de bienvenida -->
+<div id="welcome-screen" style="
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background:linear-gradient(135deg,#0a558c 0%,#247ba0 100%);
+  color:#fff; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  z-index:9999; transition:opacity 1s ease;
+">
+  <h1 style="font-size:2rem; margin-bottom:1rem;">🧩 Laboratorio de Simuladores</h1>
+  <p style="max-width:500px; text-align:center; line-height:1.5;">
+    Bienvenido/a al <strong>Simulador de Punto Muerto</strong>.<br>
+    Interactúa, experimenta y comprende cómo los costes, los precios, los ingresos... y mucho más; determinan el equilibrio de tu empresa.
   </p>
-  <p>Versión inicial de prueba.</p>
+  <button onclick="closeWelcome()" style="
+    margin-top:2rem; background:#fff; color:#0a558c;
+    border:none; padding:0.7rem 1.5rem; border-radius:10px;
+    font-size:1rem; cursor:pointer; transition:all 0.3s;
+  ">Acceder</button>
+</div>
+
+<script>
+function closeWelcome() {
+  const w = document.getElementById('welcome-screen');
+  w.style.opacity = '0';
+  setTimeout(()=> w.style.display='none', 1000);
+}
+</script>
+
+  
+<h1>Simulador de Punto Muerto ❤️ v3.6.1</h1>
+<p>
+  Introduce tus datos (precio, costes, producción...) y observa cómo la gráfica
+  se construye en directo. Licencia abierta CC BY-SA.
+</p>
+
+<!-- Selector de modo -->
+<div class="mode-row">
+  <div class="mode-title">Modo de visualización:</div>
+  <label>
+    <input type="radio" name="modo" id="modoBasico" checked />
+    Básico
+  </label>
+  <label>
+    <input type="radio" name="modo" id="modoAvanzado" />
+    Avanzado
+  </label>
+  <div class="mode-desc">
+    Básico: sólo lo esencial (punto muerto, margen de seguridad).<br/>
+    Avanzado: todo (apalancamiento, marcha en vacío, producir vs comprar...).
+  </div>
+</div>
+
+<div class="layout">
+  <!-- PANEL IZQUIERDO -->
+  <div>
+
+    <!-- DATOS IDENTIFICATIVOS -->
+    <div class="small-grid">
+      <div class="mini-field">
+        <label for="empresa">Empresa / Proyecto</label>
+        <input id="empresa" placeholder="(escribe aquí)" />
+      </div>
+      <div class="mini-field">
+        <label for="alumno">Grupo / Alumno</label>
+        <input id="alumno" placeholder="(escribe aquí)" />
+      </div>
+      <div class="mini-field">
+        <label for="fechaInfo">Fecha</label>
+        <input id="fechaInfo" placeholder="dd/mm/aaaa" />
+      </div>
+    </div>
+
+    <!-- BLOQUE DE COSTES Y PRECIOS -->
+    <div class="row">
+      <label for="cf">Costes fijos totales (CF) (€)</label>
+      <input type="number" id="cf" placeholder="ej: 10000" />
+    </div>
+
+    <div class="row">
+      <label for="p">Precio venta unitario (P) (€ / ud)</label>
+      <input type="number" id="p" step="0.01" placeholder="ej: 50" />
+    </div>
+
+    <div class="row">
+      <label for="cvu">Coste variable unitario interno (CVu) (€ / ud)</label>
+      <input type="number" id="cvu" step="0.01" placeholder="ej: 20" />
+    </div>
+
+    <!-- BLOQUE DE VENTAS / PRODUCCIÓN -->
+    <div class="row">
+      <label for="q">Unidades vendidas previstas (Q)</label>
+      <input type="number" id="q" placeholder="ej: 300" />
+    </div>
+
+    <div class="row">
+      <label for="prodMax">Producción máxima (capacidad total)</label>
+      <input type="number" id="prodMax" placeholder="ej: 500" />
+    </div>
+
+    <div class="row">
+      <label for="prodReal">Producción real (unidades fabricadas)</label>
+      <input type="number" id="prodReal" placeholder="ej: 300" />
+    </div>
+
+    <!-- BLOQUE PRODUCIR VS COMPRAR -->
+    <div class="row solo-avanzado">
+      <label for="ccomp">Coste compra externa (€/ud)</label>
+      <input type="number" id="ccomp" step="0.01" placeholder="ej: 28" />
+    </div>
+
+    <div class="row solo-avanzado">
+      <label for="cfComp">Costes fijos si compro fuera (€)</label>
+      <input type="number" id="cfComp" step="0.01" placeholder="ej: 0" />
+    </div>
+
+    <div class="button-row">
+      <button id="calcBtn">Calcular</button>
+      <button id="exportCSVBtn">Exportar resultados (.csv)</button>
+      <button id="exportPNGBtn">Exportar punto muerto (.png)</button>
+      <button id="exportPNGBtn2" class="solo-avanzado">Exportar decisión (.png)</button>
+      <button id="genInformeBtn">Generar informe</button>
+      <button id="downloadInformeBtn">Descargar informe (.txt)</button>
+    </div>
+
+    <!-- RESULTADOS NUMÉRICOS -->
+    <div class="card">
+
+      <div class="section-title">PUNTO MUERTO Y RESULTADOS BÁSICOS</div>
+      <div class="result-line"><span>Margen unitario (P - CVu) (€ / ud):</span><span id="muOut">-</span></div>
+      <div class="result-line"><span>Punto muerto (q<sup>❤️</sup> uds):</span><span id="q0Out">-</span></div>
+      <div class="result-line"><span>Nivel de ventas (nv €):</span><span id="i0Out">-</span></div>
+
+      <div class="result-line"><span>Ingresos totales (€):</span><span id="ingOut">-</span></div>
+      <div class="result-line"><span>Costes totales (€):</span><span id="ctOut">-</span></div>
+      <div class="result-line"><span>Beneficio (€):</span><span id="bOut">-</span></div>
+      <div class="result-line status"><span>Situación:</span><span id="statusOut">-</span></div>
+
+      <div class="section-title">MARGEN DE SEGURIDAD</div>
+      <div class="result-line"><span>Margen seg. (uds):</span><span id="msUnitsOut">-</span></div>
+      <div class="result-line"><span>Margen seg. (euros):</span><span id="msEurosOut">-</span></div>
+      <div class="result-line"><span>Margen seg. (% ventas):</span><span id="msPctOut">-</span></div>
+
+      <div class="result-line"><span>Beneficio / ud (a Q prevista):</span><span id="bUnitOut">-</span></div>
+
+      <div class="section-title solo-avanzado">CAPACIDAD PRODUCTIVA</div>
+      <div class="result-line solo-avanzado"><span>Producción máxima (uds):</span><span id="prodMaxOut">-</span></div>
+      <div class="result-line solo-avanzado"><span>Producción real (uds):</span><span id="prodRealOut">-</span></div>
+      <div class="result-line solo-avanzado"><span>Uso de capacidad (%):</span><span id="usoCapOut">-</span></div>
+
+      <div class="section-title solo-avanzado">MARCHA EN VACÍO</div>
+      <div class="result-line solo-avanzado"><span>Coste fijo / ud capacidad:</span><span id="cfUnitOut">-</span></div>
+      <div class="result-line solo-avanzado"><span>Capacidad ociosa (uds):</span><span id="capOciosaOut">-</span></div>
+      <div class="result-line solo-avanzado"><span>Costes marcha en vacío (€):</span><span id="marchaOut">-</span></div>
+
+      <div class="section-title solo-avanzado">ESTRUCTURA POR UNIDAD</div>
+      <div class="result-line solo-avanzado"><span>Coste Fijo Medio (CFMe = CF / prod.real):</span><span id="cfmeOut">-</span></div>
+      <div class="result-line solo-avanzado"><span>Coste Variable Unitario (CVu):</span><span id="cvuOut">-</span></div>
+
+      <div class="section-title solo-avanzado">APALANCAMIENTO OPERATIVO</div>
+      <div class="result-line solo-avanzado"><span>Margen de contribución total (€):</span><span id="mcOut">-</span></div>
+      <div class="result-line solo-avanzado"><span>Grado apalancamiento operativo (DOL):</span><span id="dolOut">-</span></div>
+
+      <div class="section-title solo-avanzado">DECISIÓN PRODUCIR VS COMPRAR</div>
+      <div class="result-line solo-avanzado"><span>Beneficio fabricando (€/interno):</span><span id="benIntOut">-</span></div>
+      <div class="result-line solo-avanzado"><span>Beneficio comprando (€/externo):</span><span id="benExtOut">-</span></div>
+      <div class="result-line solo-avanzado"><span>Q de indiferencia (uds):</span><span id="qIndifOut">-</span></div>
+      <div class="result-line status solo-avanzado"><span>Recomendación:</span><span id="makeOrBuyOut">-</span></div>
+
+    </div>
+
+    <!-- DIAGNÓSTICO BREVE -->
+    <div id="diagnosticoBox">
+      <strong>Diagnóstico:</strong>
+      <div id="diagnosticoText">Introduce datos. La gráfica irá naciendo sola.</div>
+    </div>
+
+    <!-- INFORME DETALLADO -->
+    <div id="informeWrapper">
+      <div id="informeHeaderRow">
+        <h2>Informe automático de punto muerto y estructura de costes</h2>
+        <small style="color:#555;font-size:.8rem;">
+          Este informe combina análisis económico formal con interpretación didáctica.
+        </small>
+      </div>
+
+      <div id="informeTxt" contenteditable="true">
+(Genera el informe con el botón "Generar informe")
+      </div>
+    </div>
+
+  </div>
+
+  <!-- PANEL DERECHO (gráficas + KPI) -->
+  <div class="right-side">
+
+    <!-- GRÁFICAS -->
+    <div class="graph-panel">
+
+      <!-- Leyenda y Gráfica 1 -->
+      <div class="legend">
+        <div class="legend-item">
+          <div class="color-box ingresos-color"></div>
+          <div>Ingresos Totales (IT)</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box costesTotales-color"></div>
+          <div>Costes Totales (CT)</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box cf-color"></div>
+          <div>Costes Fijos (CF)</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box cv-color"></div>
+          <div>Costes Variables Totales (CVu·Q)</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box pm-color"></div>
+          <div>Punto Muerto (q<sup>❤️</sup>, nv)</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box ms-color"></div>
+          <div>Margen de seguridad</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box zonaLoss-color"></div>
+          <div>Zona de pérdida</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box zonaProfit-color"></div>
+          <div>Zona de beneficio</div>
+        </div>
+      </div>
+
+      <canvas id="chart" width="500" height="300"></canvas>
+      <small style="font-size:.75rem;color:#555;">
+        Gráfica 1 · Eje X: Unidades vendidas · Eje Y: Euros (€)
+      </small>
+
+      <!-- Leyenda y Gráfica 2 (solo avanzado) -->
+      <div class="legend solo-avanzado">
+        <div class="legend-item">
+          <div class="color-box make-color-int"></div>
+          <div>Beneficio fabricando</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box make-color-ext"></div>
+          <div>Beneficio comprando</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box make-qprev"></div>
+          <div>Q prevista</div>
+        </div>
+        <div class="legend-item">
+          <div class="color-box make-qindif"></div>
+          <div>Q indiferencia</div>
+        </div>
+      </div>
+
+      <canvas id="chartMakeBuy" class="solo-avanzado" width="500" height="260"></canvas>
+      <small class="solo-avanzado" style="font-size:.75rem;color:#555;">
+        Gráfica 2 · Eje X: Unidades vendidas · Eje Y: Beneficio (€).
+        Visualiza qué conviene: producir o comprar.
+      </small>
+    </div>
+
+    <!-- KPI PANEL (solo avanzado) -->
+    <div class="kpi-card solo-avanzado">
+      <div>
+        <div class="kpi-block-title">Uso de capacidad</div>
+        <div class="kpi-line">
+          <span>Capacidad usada</span>
+          <span id="kpiCapacidadPct">-</span>
+        </div>
+
+        <div class="bar-wrapper">
+          <div class="bar-fill-capacidad" id="barCapacidad" style="width:0%"></div>
+        </div>
+        <div class="bar-label" id="kpiCapacidadDesc">- de producción real / máxima</div>
+      </div>
+
+      <div>
+        <div class="kpi-block-title">Marcha en vacío</div>
+        <div class="kpi-line">
+          <span>Estructura no aprovechada</span>
+          <span id="kpiVacioEUR">-</span>
+        </div>
+
+        <div class="bar-wrapper">
+          <div class="bar-fill-vacio" id="barVacio" style="width:0%"></div>
+        </div>
+        <div class="bar-label" id="kpiVacioDesc">-</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-content">
+    <img src="logo.png" alt="Logotipo Francisco Mondéjar" class="footer-logo">
+
+    <div class="footer-text">
+      Simulador diseñado por <strong>Francisco Mondéjar</strong><br>
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" class="cc-link">
+        Licencia Creative Commons <span class="nowrap">BY-SA 4.0</span>
+      </a>
+    </div>
+
+    <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank">
+      <img src="https://licensebuttons.net/l/by-sa/4.0/88x31.png"
+           alt="Licencia Creative Commons BY-SA 4.0"
+           class="cc-icon">
+    </a>
+  </div>
+</footer>
+
+
+
+<script>
+/* ================== UTILIDADES ================== */
+
+function formato(n) {
+  if (isNaN(n)) return "-";
+  return Number(n).toLocaleString("es-ES", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
+let ultimaFotoResultados = {};
+let ultimaFotoAnalitica = {};
+
+/* ================== MODO BÁSICO / AVANZADO ================== */
+
+function actualizarModoVisualizacion() {
+  const basicoChecked = document.getElementById("modoBasico").checked;
+  const avanzados = document.querySelectorAll(".solo-avanzado");
+  avanzados.forEach(el => {
+    if (basicoChecked) {
+      el.classList.add("oculto-basico");
+    } else {
+      el.classList.remove("oculto-basico");
+    }
+  });
+}
+
+/* ================== GRÁFICA PRINCIPAL (PUNTO MUERTO) ================== */
+/* Incluye sombreado de:
+   - Zona de pérdida (rojo suave)
+   - Zona de beneficio (verde suave)
+   - Margen de seguridad (turquesa)
+   Y marca q⁽❤️⁾ y nv.
+*/
+
+function dibujarGraficaIncremental(CF, P, CVu, Qprevista) {
+  const canvas = document.getElementById("chart");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width;
+  const H = canvas.height;
+
+  ctx.clearRect(0,0,W,H);
+
+  const leftPad = 50;
+  const bottomPad = 40;
+  const topPad = 20;
+  const rightPad = 20;
+
+  const tieneCF  = !isNaN(CF);
+  const tieneP   = !isNaN(P);
+  const tieneCVu = !isNaN(CVu);
+
+  // Escala X base
+  let rangoBase = 100;
+  if (!isNaN(Qprevista) && Qprevista > 0) {
+    rangoBase = Math.max(10, Qprevista * 1.2);
+  }
+
+  // Punto muerto preliminar para escalar
+  const margenUnitario = (tieneP && tieneCVu) ? (P - CVu) : NaN;
+  const tienePMlogico = (tieneCF && tieneP && tieneCVu && margenUnitario > 0);
+
+  let qCorazonTemp = NaN;
+  if (tienePMlogico) {
+    qCorazonTemp = CF / (P - CVu);
+    if (!isNaN(qCorazonTemp) && qCorazonTemp > rangoBase) {
+      rangoBase = qCorazonTemp * 1.2;
+    }
+  }
+
+  const Qmax = Math.ceil(rangoBase);
+  const pasos = 60;
+  const pts = [];
+  for (let i=0; i<=pasos; i++) {
+    const Q = (Qmax/pasos)*i;
+    pts.push({
+      Q,
+      IT:  (tieneP    ? P*Q               : NaN),
+      CT:  (tieneCF&&tieneCVu ? CF+CVu*Q  : NaN),
+      CFv: (tieneCF  ? CF                : NaN),
+      CVt: (tieneCVu ? CVu*Q             : NaN)
+    });
+  }
+
+  // Escala Y
+  let ymax = 0;
+  for (const p of pts) {
+    if (!isNaN(p.IT))  ymax = Math.max(ymax, p.IT);
+    if (!isNaN(p.CT))  ymax = Math.max(ymax, p.CT);
+    if (!isNaN(p.CFv)) ymax = Math.max(ymax, p.CFv);
+    if (!isNaN(p.CVt)) ymax = Math.max(ymax, p.CVt);
+  }
+  if (ymax <= 0) ymax = 10;
+  ymax = Math.ceil(ymax);
+
+  function xPix(Q){
+    return leftPad + (Q / Qmax) * (W - leftPad - rightPad);
+  }
+  function yPix(EUR){
+    const usableH = H - topPad - bottomPad;
+    const ratio = (EUR / ymax);
+    return (H - bottomPad) - ratio * usableH;
+  }
+
+  /* === 1. EJES Y REJILLA === */
+  ctx.strokeStyle = "rgba(80,80,80,1)";
+  ctx.lineWidth = 1.2;
+  // eje X
+  ctx.beginPath();
+  ctx.moveTo(leftPad, H - bottomPad);
+  ctx.lineTo(W - rightPad, H - bottomPad);
+  ctx.stroke();
+  // eje Y
+  ctx.beginPath();
+  ctx.moveTo(leftPad, H - bottomPad);
+  ctx.lineTo(leftPad, topPad);
+  ctx.stroke();
+
+  // Rejilla X
+  ctx.font = "10px system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  for (let i=0;i<=4;i++){
+    const qMark = (Qmax/4)*i;
+    const xp = xPix(qMark);
+    const yp = H-bottomPad;
+    ctx.strokeStyle="rgba(0,0,0,0.08)";
+    ctx.beginPath();
+    ctx.moveTo(xp,yp);
+    ctx.lineTo(xp,topPad);
+    ctx.stroke();
+    ctx.fillStyle="#000";
+    ctx.fillText(Math.round(qMark), xp, yp+4);
+  }
+
+  // Rejilla Y
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  for (let i=0;i<=4;i++){
+    const eurMark = (ymax/4)*i;
+    const xp = leftPad;
+    const yp = yPix(eurMark);
+    ctx.strokeStyle="rgba(0,0,0,0.08)";
+    ctx.beginPath();
+    ctx.moveTo(xp,yp);
+    ctx.lineTo(W-rightPad,yp);
+    ctx.stroke();
+    ctx.fillStyle="#000";
+    ctx.fillText(Math.round(eurMark), xp-4, yp);
+  }
+
+  /* === 2. SOMBREADO (si tenemos P, CVu, CF y P > CVu) === */
+  if (tienePMlogico) {
+    const qCorazon = CF / (P - CVu); // uds
+    const nv       = qCorazon * P;   // euros
+
+    // Función auxiliar para pintar área entre dos líneas en [Q1,Q2]
+    function drawAreaSegment(Q1, Q2, top1, top2, bot1, bot2, fillColor) {
+      ctx.save();
+      ctx.fillStyle = fillColor;
+      ctx.beginPath();
+      ctx.moveTo(xPix(Q1), yPix(top1));
+      ctx.lineTo(xPix(Q2), yPix(top2));
+      ctx.lineTo(xPix(Q2), yPix(bot2));
+      ctx.lineTo(xPix(Q1), yPix(bot1));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 2A. Margen de seguridad (turquesa)
+    if (!isNaN(Qprevista) && Qprevista > qCorazon && qCorazon >= 0) {
+      const xStart = xPix(qCorazon);
+      const xEnd   = xPix(Qprevista);
+      ctx.save();
+      ctx.fillStyle = "rgba(0,200,150,0.15)";
+      ctx.fillRect(xStart, topPad, xEnd - xStart, H - bottomPad - topPad);
+      ctx.restore();
+
+      const xMid = (xStart + xEnd)/2;
+      ctx.save();
+      ctx.fillStyle = "rgba(0,200,150,0.6)";
+      ctx.font = "10px system-ui";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      ctx.fillText("Margen de seguridad", xMid, topPad + 4);
+      ctx.restore();
+    }
+
+    // 2B. Zona pérdida / beneficio:
+    for (let i=0; i<pts.length-1; i++) {
+      const a = pts[i];
+      const b = pts[i+1];
+
+      if (isNaN(a.IT) || isNaN(a.CT) || isNaN(b.IT) || isNaN(b.CT)) continue;
+
+      const denomGap = ((b.IT - a.IT) - (b.CT - a.CT));
+      let tieneCorte = false;
+      let tCorte = NaN;
+      if (denomGap !== 0) {
+        tCorte = (a.CT - a.IT) / denomGap;
+        if (tCorte >= 0 && tCorte <= 1) {
+          tieneCorte = true;
+        }
+      }
+
+      if (!tieneCorte) {
+        if (a.CT >= a.IT && b.CT >= b.IT) {
+          // pérdida
+          drawAreaSegment(
+            a.Q, b.Q,
+            a.CT, b.CT,
+            a.IT, b.IT,
+            "rgba(255,0,0,0.15)"
+          );
+        } else if (a.IT >= a.CT && b.IT >= b.CT) {
+          // beneficio
+          drawAreaSegment(
+            a.Q, b.Q,
+            a.IT, b.IT,
+            a.CT, b.CT,
+            "rgba(0,200,0,0.15)"
+          );
+        }
+      } else {
+        const Qsplit = a.Q + tCorte*(b.Q - a.Q);
+        const ValITsplit = a.IT + tCorte*(b.IT - a.IT);
+        const ValCTsplit = a.CT + tCorte*(b.CT - a.CT);
+
+        // Primer subtramo
+        if (a.CT > a.IT) {
+          drawAreaSegment(
+            a.Q, Qsplit,
+            a.CT, ValCTsplit,
+            a.IT, ValITsplit,
+            "rgba(255,0,0,0.15)"
+          );
+        } else {
+          drawAreaSegment(
+            a.Q, Qsplit,
+            a.IT, ValITsplit,
+            a.CT, ValCTsplit,
+            "rgba(0,200,0,0.15)"
+          );
+        }
+
+        // Segundo subtramo
+        if (b.CT > b.IT) {
+          drawAreaSegment(
+            Qsplit, b.Q,
+            ValCTsplit, b.CT,
+            ValITsplit, b.IT,
+            "rgba(255,0,0,0.15)"
+          );
+        } else {
+          drawAreaSegment(
+            Qsplit, b.Q,
+            ValITsplit, b.IT,
+            ValCTsplit, b.CT,
+            "rgba(0,200,0,0.15)"
+          );
+        }
+      }
+    }
+
+    // 2C. Punto muerto q⁽❤️⁾ y nv
+    if (!isNaN(qCorazon) && qCorazon >= 0 && qCorazon <= Qmax && !isNaN(nv)) {
+      const xpm = xPix(qCorazon);
+      const ypm = yPix(nv);
+
+      ctx.fillStyle = "rgba(0,0,200,0.9)";
+      ctx.beginPath();
+      ctx.arc(xpm, ypm, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(0,0,200,0.4)";
+      ctx.setLineDash([4,4]);
+
+      ctx.beginPath();
+      ctx.moveTo(xpm, H-bottomPad);
+      ctx.lineTo(xpm, ypm);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(leftPad, ypm);
+      ctx.lineTo(xpm, ypm);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = "rgba(0,0,200,0.9)";
+      ctx.font = "10px system-ui";
+
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+      ctx.fillText("q⁽❤️⁾ ≈ " + Math.round(qCorazon) + " uds", xpm + 6, ypm - 4);
+
+      ctx.textAlign = "right";
+      ctx.textBaseline = "top";
+      ctx.fillText("nv ≈ " + Math.round(nv) + " €", xpm - 6, ypm + 4);
+    }
+  }
+
+  /* === 3. DIBUJAR LAS LÍNEAS ENCIMA DEL SOMBREADO === */
+
+  function drawLine(getY, color, width, dash){
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash(dash||[]);
+    ctx.beginPath();
+    pts.forEach((p,i)=>{
+      const yv = getY(p);
+      if (!isNaN(yv)) {
+        const xp = xPix(p.Q);
+        const yp = yPix(yv);
+        if (i===0) ctx.moveTo(xp,yp); else ctx.lineTo(xp,yp);
+      }
+    });
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // CF horizontal gris oscuro
+  if (tieneCF) {
+    drawLine(p=>p.CFv, "rgba(80,80,80,1)", 1.5, []);
+  }
+
+  // CVu·Q naranja
+  if (tieneCVu) {
+    drawLine(p=>p.CVt, "rgba(255,165,0,0.9)",1.5);
+  }
+
+  // Costes totales (CF+CVu·Q) rojo
+  if (tieneCF && tieneCVu) {
+    drawLine(p=>p.CT, "rgba(200,0,0,0.9)",2);
+  }
+
+  // Ingresos totales (P·Q) verde
+  if (tieneP) {
+    drawLine(p=>p.IT, "rgba(0,150,0,0.9)",2);
+  }
+
+  // Línea vertical Q prevista + punto marcado en IT(Q)
+  if (!isNaN(Qprevista) && Qprevista >= 0) {
+    const xQp = xPix(Qprevista);
+    ctx.save();
+    ctx.strokeStyle = "rgba(80,80,80,0.5)";
+    ctx.setLineDash([2,2]);
+    ctx.beginPath();
+    ctx.moveTo(xQp, H-bottomPad);
+    ctx.lineTo(xQp, topPad);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (tieneP) {
+      const yITq = yPix(P * Qprevista);
+      ctx.fillStyle = "rgba(80,80,80,0.8)";
+      ctx.beginPath();
+      ctx.arc(xQp, yITq, 3, 0, Math.PI*2);
+      ctx.fill();
+
+      ctx.font = "10px system-ui";
+      ctx.fillStyle = "rgba(80,80,80,0.9)";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "bottom";
+      ctx.fillText("Q prevista: " + Math.round(Qprevista) + " uds", xQp + 6, yITq - 4);
+    }
+    ctx.restore();
+  }
+}
+
+/* ================== GRÁFICA PRODUCIR VS COMPRAR ================== */
+
+function dibujarGraficaMakeBuyVacia() {
+  const canvas = document.getElementById("chartMakeBuy");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  const leftPad = 50;
+  const bottomPad = 40;
+  const topPad = 20;
+  const rightPad = 20;
+
+  ctx.strokeStyle = "rgba(80,80,80,1)";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(leftPad, H - bottomPad);
+  ctx.lineTo(W - rightPad, H - bottomPad);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(leftPad, H - bottomPad);
+  ctx.lineTo(leftPad, topPad);
+  ctx.stroke();
+
+  ctx.font = "10px system-ui";
+  ctx.fillStyle = "#000";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText("Introduce datos para comparar fabricar vs comprar", leftPad + 8, topPad + 8);
+}
+
+function dibujarGraficaMakeBuy(P, CVu, CF, Ccomp_u, CF_comp, Qprevista, qIndif) {
+  const canvas = document.getElementById("chartMakeBuy");
+  const ctx = canvas.getContext("2d");
+
+  if (
+    isNaN(P) || isNaN(CVu) || isNaN(CF) ||
+    isNaN(Ccomp_u) || isNaN(CF_comp)
+  ) {
+    dibujarGraficaMakeBuyVacia();
+    return;
+  }
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  let QmaxTmp = Math.max(Qprevista || 0, qIndif || 0, 10);
+  QmaxTmp = Math.ceil(QmaxTmp * 1.2);
+  if (QmaxTmp < 10) QmaxTmp = 10;
+  const Qmax = QmaxTmp;
+
+  const pasos = 60;
+  const pts = [];
+  let maxBen = 0;
+  let minBen = 0;
+
+  for (let i=0; i<=pasos; i++) {
+    const Q = (Qmax/pasos)*i;
+    const benInt = Q*(P - CVu) - CF;
+    const benExt = Q*(P - Ccomp_u) - CF_comp;
+    pts.push({ Q, benInt, benExt });
+    maxBen = Math.max(maxBen, benInt, benExt);
+    minBen = Math.min(minBen, benInt, benExt);
+  }
+
+  const leftPad = 50;
+  const bottomPad = 40;
+  const topPad = 20;
+  const rightPad = 20;
+  const W = canvas.width;
+  const H = canvas.height;
+
+  const margenY = (maxBen - minBen) * 0.1;
+  const yTopVal = maxBen + margenY;
+  const yBotVal = minBen - margenY;
+
+  function xPix(Q){
+    return leftPad + (Q / Qmax) * (W - leftPad - rightPad);
+  }
+  function yPix(B){
+    const usableH = H - topPad - bottomPad;
+    const ratio = (B - yBotVal)/(yTopVal - yBotVal);
+    return (H - bottomPad) - ratio * usableH;
+  }
+
+  // Ejes
+  ctx.strokeStyle = "rgba(80,80,80,1)";
+  ctx.lineWidth = 1.2;
+  // eje X
+  ctx.beginPath();
+  ctx.moveTo(leftPad, H - bottomPad);
+  ctx.lineTo(W - rightPad, H - bottomPad);
+  ctx.stroke();
+  // eje Y
+  ctx.beginPath();
+  ctx.moveTo(leftPad, H - bottomPad);
+  ctx.lineTo(leftPad, topPad);
+  ctx.stroke();
+
+  // Rejilla X
+  ctx.font = "10px system-ui";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  for (let i=0;i<=4;i++){
+    const qMark = (Qmax/4)*i;
+    const xp = xPix(qMark);
+    const yp = H-bottomPad;
+    ctx.strokeStyle="rgba(0,0,0,0.08)";
+    ctx.beginPath();
+    ctx.moveTo(xp,yp);
+    ctx.lineTo(xp,topPad);
+    ctx.stroke();
+    ctx.fillStyle="#000";
+    ctx.fillText(Math.round(qMark), xp, yp+4);
+  }
+
+  // Rejilla Y
+  ctx.textAlign = "right";
+  ctx.textBaseline = "middle";
+  for (let i=0;i<=4;i++){
+    const bMark = yBotVal + ((yTopVal-yBotVal)/4)*i;
+    const xp = leftPad;
+    const yp = yPix(bMark);
+    ctx.strokeStyle="rgba(0,0,0,0.08)";
+    ctx.beginPath();
+    ctx.moveTo(xp,yp);
+    ctx.lineTo(W-rightPad,yp);
+    ctx.stroke();
+    ctx.fillStyle="#000";
+    ctx.fillText(Math.round(bMark), xp-4, yp);
+  }
+
+  // Etiquetas ejes
+  ctx.save();
+  ctx.font = "10px system-ui";
+  ctx.fillStyle="#000";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText("Unidades (Q)", (leftPad+W-rightPad)/2, H-bottomPad+20);
+
+  ctx.save();
+  ctx.translate(leftPad-35,(topPad+H-bottomPad)/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign="center";
+  ctx.textBaseline="top";
+  ctx.fillText("Beneficio (€)",0,0);
+  ctx.restore();
+  ctx.restore();
+
+  function drawCurve(pts, getY, color, width) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    pts.forEach((p,i)=>{
+      const xp = xPix(p.Q);
+      const yp = yPix(getY(p));
+      if(i===0) ctx.moveTo(xp,yp);
+      else ctx.lineTo(xp,yp);
+    });
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // fabricar interno (azul)
+  drawCurve(pts, p=>p.benInt, "rgba(0,0,150,0.9)", 2);
+
+  // comprar externo (morado)
+  drawCurve(pts, p=>p.benExt, "rgba(150,0,150,0.9)", 2);
+
+  // Q prevista
+  if (!isNaN(Qprevista) && Qprevista>=0 && Qprevista<=Qmax) {
+    const xQ = xPix(Qprevista);
+    ctx.save();
+    ctx.strokeStyle = "rgba(80,80,80,0.6)";
+    ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.moveTo(xQ, H-bottomPad);
+    ctx.lineTo(xQ, topPad);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(80,80,80,0.8)";
+    ctx.font = "10px system-ui";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("Q prevista ("+Math.round(Qprevista)+" uds)", xQ+4, topPad+12);
+    ctx.restore();
+  }
+
+  // Q indiferencia
+  if (!isNaN(qIndif) && qIndif>=0 && qIndif<=Qmax && isFinite(qIndif)) {
+    const xI = xPix(qIndif);
+    ctx.save();
+    ctx.strokeStyle = "rgba(200,120,0,0.8)";
+    ctx.setLineDash([6,2]);
+    ctx.beginPath();
+    ctx.moveTo(xI, H-bottomPad);
+    ctx.lineTo(xI, topPad);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = "rgba(200,120,0,0.9)";
+    ctx.font = "10px system-ui";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "top";
+    ctx.fillText("Q_indif ≈ "+qIndif.toFixed(1)+" uds", xI-4, topPad+4);
+    ctx.restore();
+  }
+}
+
+/* ================== INFORME ================== */
+
+function safeVal(val, dec = 2, suf = "") {
+  if (typeof val === "number" && !isNaN(val) && isFinite(val)) {
+    return val.toFixed(dec) + suf;
+  }
+  return "-";
+}
+
+/* ================== CÁLCULO GLOBAL + REDIBUJO ================== */
+
+function recalcularYRedibujar() {
+  const CF        = parseFloat(document.getElementById("cf").value);
+  const P         = parseFloat(document.getElementById("p").value);
+  const CVu       = parseFloat(document.getElementById("cvu").value);
+  const Q         = parseFloat(document.getElementById("q").value);
+  const prodMax   = parseFloat(document.getElementById("prodMax").value);
+  const prodReal  = parseFloat(document.getElementById("prodReal").value);
+
+  const Ccomp_u   = parseFloat(document.getElementById("ccomp").value);
+  const CF_comp   = parseFloat(document.getElementById("cfComp").value);
+
+  const margenUnitario = P - CVu;
+  const sinSolucionPM = (margenUnitario <= 0 || isNaN(margenUnitario));
+  const qCorazon = (!sinSolucionPM && !isNaN(CF)) ? (CF / margenUnitario) : NaN;
+  const nv = (!sinSolucionPM) ? (qCorazon * P) : NaN;
+
+  const ingresos = P * Q;
+  const costesTotales = CF + CVu * Q;
+  const beneficio = ingresos - costesTotales;
+  const beneficioUnitario = (Q > 0) ? (beneficio / Q) : NaN;
+
+  // Margen de seguridad
+  const msUnits = (!isNaN(qCorazon)) ? (Q - qCorazon) : NaN;
+  const msEuros = ingresos - nv;
+  const msPct   = (ingresos > 0) ? (msEuros / ingresos) : NaN;
+
+  // uso de capacidad
+  const usoCapacidad = (prodMax > 0) ? (prodReal / prodMax) : NaN;
+
+  // marcha en vacío
+  const cfUnit = (prodMax > 0) ? (CF / prodMax) : NaN;
+  const capOciosa = (!isNaN(prodMax) && !isNaN(prodReal)) ? (prodMax - prodReal) : NaN;
+  const marchaVacio = (!isNaN(cfUnit) && !isNaN(capOciosa)) ? (cfUnit * capOciosa) : NaN;
+  const vacioPctSobreCF = (CF > 0 && !isNaN(marchaVacio)) ? (marchaVacio / CF) : NaN;
+
+  // CFMe
+  const cfme = (prodReal > 0) ? (CF / prodReal) : NaN;
+
+  // Apalancamiento operativo
+  const margenContrib = (P - CVu) * Q;
+  let dol = NaN;
+  const denom = margenContrib - CF;
+  if (!isNaN(margenContrib) && denom !== 0) {
+    dol = margenContrib / denom;
+  }
+
+  // Estado
+  let estado = "-";
+  if (!isNaN(beneficio)) {
+    if (beneficio < 0) {
+      estado = "PÉRDIDA";
+    } else if (beneficio === 0) {
+      estado = "EN EQUILIBRIO (q⁽❤️⁾)";
+    } else if (beneficio > 0) {
+      estado = "BENEFICIO";
+    }
+  }
+
+  // Producir vs comprar
+  const benInt = (P * Q) - (CF + CVu * Q);            // fabricar
+  const benExt = (P * Q) - (CF_comp + Ccomp_u * Q);   // comprar
+
+  let qIndif = NaN;
+  const denomIndif = (Ccomp_u - CVu);
+  if (denomIndif !== 0 && !isNaN(denomIndif)) {
+    qIndif = (CF - CF_comp) / denomIndif;
+  }
+
+  let recomendacion = "";
+  if (isNaN(benInt) || isNaN(benExt)) {
+    recomendacion = "Datos incompletos.";
+  } else if (benInt > benExt) {
+    recomendacion = "Más rentable PRODUCIR internamente a Q=" + Q + " uds.";
+  } else if (benExt > benInt) {
+    recomendacion = "Más rentable COMPRAR al proveedor a Q=" + Q + " uds.";
+  } else {
+    recomendacion = "Indiferente al nivel de ventas previsto.";
+  }
+
+  // DIAGNÓSTICO
+  let diag = "";
+  if (sinSolucionPM) {
+    diag =
+      "⚠ No existe punto muerto con estos datos.\n" +
+      "El precio por unidad no cubre el coste variable unitario o faltan datos.\n" +
+      "Mientras P ≤ CVu, jamás cubres los costes fijos.";
+  } else if (!isNaN(Q) && !isNaN(qCorazon) && Q < qCorazon) {
+    diag = [
+      "⚠ Estás por debajo de q⁽❤️⁾.",
+      "Aún no cubres todos los costes fijos.",
+      "Te faltan aprox. " + (isNaN(qCorazon - Q) ? "-" : Math.round(qCorazon - Q)) +
+        " uds para llegar al equilibrio."
+    ].join("\n");
+  } else if (
+    !isNaN(Q) && !isNaN(qCorazon) &&
+    Math.round(Q) === Math.round(qCorazon)
+  ) {
+    diag = [
+      "Estás justo en q⁽❤️⁾.",
+      "nv cubre costes fijos y variables.",
+      "No hay pérdida, pero tampoco beneficio."
+    ].join("\n");
+  } else if (!isNaN(Q) && !isNaN(qCorazon) && Q > qCorazon) {
+    diag = [
+      "✅ Estás por encima de q⁽❤️⁾.",
+      "Tu margen de seguridad es " +
+        (isNaN(msPct)? "-" : (msPct*100).toFixed(1) + "%") +
+        " de tus ventas previstas.",
+      "Podrías caer hasta nv ≈ " +
+        (isNaN(nv)? "-" : nv.toFixed(2)) +
+        " € antes de entrar en pérdidas."
+    ].join("\n");
+  } else {
+    diag = "Introduce más datos para poder interpretar la situación.";
+  }
+
+  if (!isNaN(usoCapacidad)) {
+    diag += "\n\nCapacidad utilizada: " +
+      (usoCapacidad*100).toFixed(1) + "% de tu producción máxima.";
+  }
+  if (!isNaN(marchaVacio)) {
+    diag += "\nCostes de marcha en vacío: " +
+      marchaVacio.toFixed(2) +
+      " € de estructura que estás pagando sin usar.";
+  }
+
+  if (!isNaN(cfme) && !isNaN(CVu)) {
+    if (cfme > CVu) {
+      diag += "\nEstructura pesada: CFMe (" +
+        cfme.toFixed(2) + " €/ud) > CVu (" +
+        (isNaN(CVu)?"-":CVu.toFixed(2)) +
+        " €/ud). Necesitas más volumen para diluir costes fijos.";
+    } else if (cfme < CVu) {
+      diag += "\nVariable pesado: CFMe (" +
+        cfme.toFixed(2) + " €/ud) < CVu (" +
+        (isNaN(CVu)?"-":CVu.toFixed(2)) +
+        " €/ud). Alcanzas antes el equilibrio, pero cada unidad deja menos margen.";
+    } else if (!isNaN(cfme)) {
+      diag += "\nCFMe y CVu prácticamente iguales (" +
+        cfme.toFixed(2) +
+        " €/ud). Peso similar de fijo y variable por unidad.";
+    }
+  }
+
+  if (!isNaN(dol) && isFinite(dol)) {
+    if (dol > 3) {
+      diag += "\nApalancamiento operativo MUY alto (DOL ≈ " +
+        dol.toFixed(2) +
+        "). Riesgo operativo elevado.";
+    } else if (dol > 1.5) {
+      diag += "\nApalancamiento operativo moderado (DOL ≈ " +
+        dol.toFixed(2) +
+        "). El beneficio responde con intensidad a las ventas.";
+    } else if (dol > 0) {
+      diag += "\nApalancamiento operativo bajo (DOL ≈ " +
+        dol.toFixed(2) +
+        "). Menor riesgo.";
+    }
+  } else {
+    diag += "\nEl apalancamiento operativo no es interpretable (en pérdidas o justo en q⁽❤️⁾).";
+  }
+
+  diag += "\n\nDecisión producir vs comprar:\n" + recomendacion;
+  if (!isNaN(qIndif) && isFinite(qIndif)) {
+    diag += "\nPunto de indiferencia ≈ " + qIndif.toFixed(2) +
+      " uds (a partir de ahí suele compensar fabricar).";
+  }
+
+  // Mostrar resultados en pantalla
+  document.getElementById("muOut").textContent       = formato(margenUnitario);
+  document.getElementById("q0Out").textContent       =
+    sinSolucionPM ? "sin solución" :
+    (isNaN(qCorazon) ? "-" : formato(qCorazon));
+  document.getElementById("i0Out").textContent       =
+    sinSolucionPM ? "sin solución" :
+    (isNaN(nv) ? "-" : formato(nv));
+
+  document.getElementById("ingOut").textContent      = formato(ingresos);
+  document.getElementById("ctOut").textContent       = formato(costesTotales);
+  document.getElementById("bOut").textContent        = formato(beneficio);
+  document.getElementById("statusOut").textContent   = estado;
+
+  document.getElementById("msUnitsOut").textContent  = isNaN(msUnits) ? "-" : formato(msUnits);
+  document.getElementById("msEurosOut").textContent  = isNaN(msEuros) ? "-" : formato(msEuros);
+  document.getElementById("msPctOut").textContent    = isNaN(msPct) ? "-" : ((msPct*100).toFixed(2) + " %");
+
+  const beneficioUnitTxt = isNaN(beneficioUnitario) ? "-" : formato(beneficioUnitario);
+  document.getElementById("bUnitOut").textContent    = beneficioUnitTxt;
+
+  document.getElementById("prodMaxOut").textContent  = isNaN(prodMax)  ? "-" : formato(prodMax);
+  document.getElementById("prodRealOut").textContent = isNaN(prodReal) ? "-" : formato(prodReal);
+  document.getElementById("usoCapOut").textContent   = isNaN(usoCapacidad) ? "-" : ((usoCapacidad*100).toFixed(2) + " %");
+
+  document.getElementById("cfUnitOut").textContent   = isNaN(cfUnit) ? "-" : formato(cfUnit);
+  document.getElementById("capOciosaOut").textContent= isNaN(capOciosa) ? "-" : formato(capOciosa);
+  document.getElementById("marchaOut").textContent   = isNaN(marchaVacio) ? "-" : formato(marchaVacio);
+
+  document.getElementById("cfmeOut").textContent     = isNaN(cfme) ? "-" : formato(cfme);
+  document.getElementById("cvuOut").textContent      = isNaN(CVu)  ? "-" : formato(CVu);
+
+  document.getElementById("mcOut").textContent       = isNaN(margenContrib) ? "-" : formato(margenContrib);
+  document.getElementById("dolOut").textContent      = (isNaN(dol) || !isFinite(dol)) ? "-" : dol.toFixed(2);
+
+  document.getElementById("benIntOut").textContent   = isNaN(benInt) ? "-" : formato(benInt);
+  document.getElementById("benExtOut").textContent   = isNaN(benExt) ? "-" : formato(benExt);
+  document.getElementById("qIndifOut").textContent   = (isNaN(qIndif) || !isFinite(qIndif)) ? "-" : formato(qIndif);
+  document.getElementById("makeOrBuyOut").textContent= recomendacion;
+
+  document.getElementById("diagnosticoText").textContent = diag;
+
+  // Guardamos snapshot
+  ultimaFotoResultados = {
+    "Costes fijos totales (CF) €": CF,
+    "Precio unitario (P) €": P,
+    "Coste variable unitario interno (CVu) €": CVu,
+    "Unidades previstas (Q)": Q,
+    "Producción máxima (uds)": prodMax,
+    "Producción real (uds)": prodReal,
+    "Uso de capacidad (%)": isNaN(usoCapacidad) ? "" : (usoCapacidad * 100),
+
+    "Punto muerto q(❤️) (uds)": sinSolucionPM ? "sin solución" : (isNaN(qCorazon) ? "" : qCorazon),
+    "Nivel de ventas nv (€)": sinSolucionPM ? "sin solución" : (isNaN(nv) ? "" : nv),
+
+    "Ingresos totales (€)": ingresos,
+    "Costes totales (€)": costesTotales,
+    "Beneficio (€)": beneficio,
+    "Beneficio unitario (€ / ud)": isNaN(beneficioUnitario) ? "" : beneficioUnitario,
+
+    "Margen seguridad (uds)": isNaN(msUnits) ? "" : msUnits,
+    "Margen seguridad (€)": isNaN(msEuros) ? "" : msEuros,
+    "Margen seguridad (%)": isNaN(msPct) ? "" : (msPct * 100),
+
+    "Coste Fijo Medio CFMe (€/ud)": isNaN(cfme) ? "" : cfme,
+    "Coste Variable Unitario CVu (€/ud)": CVu,
+    "Coste fijo / ud capacidad (€/ud máx)": isNaN(cfUnit) ? "" : cfUnit,
+    "Capacidad ociosa (uds)": isNaN(capOciosa) ? "" : capOciosa,
+    "Marcha en vacío (€)": isNaN(marchaVacio) ? "" : marchaVacio,
+    "% CF desperdiciado": isNaN(vacioPctSobreCF) ? "" : (vacioPctSobreCF * 100),
+
+    "Margen contribución total (€)": margenContrib,
+    "DOL (apalancamiento operativo)": (isNaN(dol) || !isFinite(dol)) ? "" : dol,
+
+    "Coste compra externa (€/ud)": Ccomp_u,
+    "Costes fijos si compro fuera (€)": CF_comp,
+    "Beneficio fabricando (€/interno)": benInt,
+    "Beneficio comprando (€/externo)": benExt,
+    "Q de indiferencia (uds)": (isNaN(qIndif) || !isFinite(qIndif)) ? "" : qIndif
+  };
+
+  ultimaFotoAnalitica = {
+    CF, P, CVu, Q, prodMax, prodReal,
+    Ccomp_u, CF_comp,
+    usoCapacidad,
+    qCorazon, nv,
+    ingresos, costesTotales, beneficio,
+    msUnits, msEuros, msPct,
+    cfme, marchaVacio, vacioPctSobreCF,
+    dol,
+    benInt, benExt, qIndif,
+    recomendacion
+  };
+
+  // Redibujar gráficas
+  dibujarGraficaIncremental(CF, P, CVu, Q);
+  dibujarGraficaMakeBuy(P, CVu, CF, Ccomp_u, CF_comp, Q, qIndif);
+
+  // KPIs
+  const barCap = document.getElementById("barCapacidad");
+  const kpiCapacidadPct = document.getElementById("kpiCapacidadPct");
+  const kpiCapacidadDesc = document.getElementById("kpiCapacidadDesc");
+
+  if (!isNaN(usoCapacidad)) {
+    const pct = (usoCapacidad*100);
+    barCap.style.width = Math.min(Math.max(pct,0),100).toFixed(1) + "%";
+    kpiCapacidadPct.textContent = pct.toFixed(1) + " %";
+    kpiCapacidadDesc.textContent = (isNaN(prodReal) || isNaN(prodMax))
+      ? "-"
+      : (Math.round(prodReal) + " / " + Math.round(prodMax) + " uds");
+  } else {
+    barCap.style.width = "0%";
+    kpiCapacidadPct.textContent = "-";
+    kpiCapacidadDesc.textContent = "-";
+  }
+
+  const barVac = document.getElementById("barVacio");
+  const kpiVacioEUR = document.getElementById("kpiVacioEUR");
+  const kpiVacioDesc = document.getElementById("kpiVacioDesc");
+
+  if (!isNaN(marchaVacio)) {
+    kpiVacioEUR.textContent = marchaVacio.toFixed(2) + " €";
+  } else {
+    kpiVacioEUR.textContent = "-";
+  }
+
+  if (!isNaN(vacioPctSobreCF)) {
+    const pctVacio = vacioPctSobreCF*100;
+    barVac.style.width = Math.min(Math.max(pctVacio,0),100).toFixed(1) + "%";
+    kpiVacioDesc.textContent = pctVacio.toFixed(1) + " % de tus CF";
+  } else {
+    barVac.style.width = "0%";
+    kpiVacioDesc.textContent = "-";
+  }
+}
+
+/* ================== EXPORT CSV ================== */
+
+document.getElementById("exportCSVBtn").addEventListener("click", () => {
+  let csv = "Métrica,Valor\n";
+  for (const clave in ultimaFotoResultados) {
+    const valor = ultimaFotoResultados[clave];
+    const limpio =
+      (valor === "" || valor === null || Number.isNaN(valor))
+        ? ""
+        : valor;
+    csv += `"${clave}",${limpio}\n`;
+  }
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "simulador_punto_muerto.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+/* ================== EXPORT PNG GRÁFICAS ================== */
+
+document.getElementById("exportPNGBtn").addEventListener("click", () => {
+  const canvas = document.getElementById("chart");
+  const dataURL = canvas.toDataURL("image/png");
+
+  const a = document.createElement("a");
+  a.href = dataURL;
+  a.download = "grafica_punto_muerto.png";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+document.getElementById("exportPNGBtn2").addEventListener("click", () => {
+  const canvas = document.getElementById("chartMakeBuy");
+  const dataURL = canvas.toDataURL("image/png");
+
+  const a = document.createElement("a");
+  a.href = dataURL;
+  a.download = "grafica_producir_vs_comprar.png";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+
+/* ================== GENERAR INFORME ================== */
+
+document.getElementById("genInformeBtn").addEventListener("click", () => {
+  const d = ultimaFotoAnalitica;
+
+  if (!d || Object.keys(d).length === 0) {
+    document.getElementById("informeTxt").textContent =
+      "Primero introduce datos (se actualiza en directo).";
+    return;
+  }
+
+  const empresa = document.getElementById("empresa").value || "(sin especificar)";
+  const alumno  = document.getElementById("alumno").value  || "(sin especificar)";
+  const fecha   = document.getElementById("fechaInfo").value || "(sin fecha)";
+  const sinSolucionPM = ((d.P - d.CVu) <= 0 || isNaN(d.P - d.CVu));
+
+  let situacionPM = "";
+  if (sinSolucionPM) {
+    situacionPM =
+      "   - No existe punto muerto económicamente viable. " +
+      "El precio por unidad es menor o igual que el coste variable unitario, " +
+      "o faltan datos.";
+  } else if (isNaN(d.qCorazon)) {
+    situacionPM =
+      "   - No puede calcularse el punto muerto porque el margen unitario es nulo/negativo.";
+  } else if (!isNaN(d.Q) && d.Q < d.qCorazon) {
+    situacionPM =
+      "   - El nivel de ventas previsto ("+ safeVal(d.Q,0," uds") +
+      ") está por DEBAJO del punto muerto. Aún no cubres todos los costes fijos.";
+  } else if (!isNaN(d.Q) && Math.round(d.Q) === Math.round(d.qCorazon)) {
+    situacionPM =
+      "   - Estás CERCA del punto muerto. Cubres costes fijos y variables, casi sin beneficio.";
+  } else {
+    situacionPM =
+      "   - Estás POR ENCIMA del punto muerto. A partir de ahí generas beneficio.";
+  }
+
+  let textoEstructura = "";
+  if (!isNaN(d.cfme) && !isNaN(d.CVu)) {
+    if (d.cfme > d.CVu) {
+      textoEstructura =
+        "   - Estructura con mucho peso fijo. Necesitas más volumen para diluir ese coste fijo por unidad.";
+    } else if (d.cfme < d.CVu) {
+      textoEstructura =
+        "   - Peso variable más alto. Alcanzas antes el equilibrio, pero margen por unidad más estrecho.";
+    } else {
+      textoEstructura =
+        "   - Peso fijo medio y coste variable casi iguales. Equilibrio entre estructura fija y coste por unidad.";
+    }
+  } else {
+    textoEstructura =
+      "   - No se puede comparar CFMe con CVu (faltan datos de producción real).";
+  }
+
+  let textoDOL = "";
+  if (typeof d.dol === "number" && isFinite(d.dol) && !isNaN(d.dol)) {
+    if (d.dol > 3) {
+      textoDOL =
+        "   - Apalancamiento operativo MUY alto. Pequeños cambios en ventas provocan cambios enormes en beneficio.";
+    } else if (d.dol > 1.5) {
+      textoDOL =
+        "   - Apalancamiento operativo moderado. El beneficio reacciona con fuerza a las ventas.";
+    } else if (d.dol > 0) {
+      textoDOL =
+        "   - Apalancamiento operativo bajo. Riesgo operativo más controlado.";
+    }
+  } else {
+    textoDOL =
+      "   - No es posible interpretar el apalancamiento operativo (en pérdidas o justo en q⁽❤️⁾).";
+  }
+
+  const benIntOK = (!isNaN(d.benInt) && isFinite(d.benInt));
+  const benExtOK = (!isNaN(d.benExt) && isFinite(d.benExt));
+  const qIndifOK = (!isNaN(d.qIndif) && isFinite(d.qIndif));
+  let textoMakeBuy = "";
+  if (benIntOK && benExtOK) {
+    textoMakeBuy +=
+      "   • Beneficio estimado fabricando internamente: " +
+      d.benInt.toFixed(2) + " €\n" +
+      "   • Beneficio estimado comprando externamente: " +
+      d.benExt.toFixed(2) + " €\n" +
+      "   • Recomendación actual: " + d.recomendacion + "\n";
+  } else {
+    textoMakeBuy +=
+      "   • No hay datos suficientes para comparar fabricar vs comprar.\n";
+  }
+
+  if (qIndifOK) {
+    textoMakeBuy +=
+      "   • Punto de indiferencia ≈ " + d.qIndif.toFixed(2) +
+      " uds. Por debajo suele convenir comprar; por encima, fabricar.";
+  } else {
+    textoMakeBuy +=
+      "   • No se puede calcular un punto claro de indiferencia (faltan datos o costes similares).";
+  }
+
+  const esBasico = document.getElementById("modoBasico").checked;
+
+  let informeFinal = "";
+
+  if (esBasico) {
+    informeFinal = [
+      "INFORME BÁSICO DE PUNTO MUERTO Y MARGEN DE SEGURIDAD",
+      "Empresa / Proyecto: " + empresa,
+      "Grupo / Alumno:     " + alumno,
+      "Fecha:              " + fecha,
+      "--------------------------------------------------",
+      "",
+      "1. Datos clave",
+      "   • Costes fijos totales (CF): " + safeVal(d.CF) + " €",
+      "   • Precio de venta unitario (P): " + safeVal(d.P) + " €/ud",
+      "   • Coste variable unitario (CVu): " + safeVal(d.CVu) + " €/ud",
+      "   • Unidades previstas de venta (Q): " + safeVal(d.Q,0," uds"),
+      "",
+      "2. Punto muerto y beneficio",
+      "   • Punto muerto q(❤️): " +
+        (sinSolucionPM
+          ? "sin solución (P ≤ CVu o faltan datos)"
+          : (isNaN(d.qCorazon) ? "-" : d.qCorazon.toFixed(2) + " uds")),
+      "   • Ingresos previstos totales: " + safeVal(d.ingresos) + " €",
+      "   • Costes previstos totales: " + safeVal(d.costesTotales) + " €",
+      "   • Beneficio previsto: " + safeVal(d.beneficio) + " €",
+      "",
+      "   Interpretación rápida:",
+      situacionPM,
+      "",
+      "3. Margen de seguridad",
+      "   • Margen de seguridad (uds): " +
+        (isNaN(d.msUnits) ? "-" : d.msUnits.toFixed(2) + " uds"),
+      "   • Margen de seguridad (€): " +
+        (isNaN(d.msEuros) ? "-" : d.msEuros.toFixed(2) + " €"),
+      "   • Margen de seguridad (% sobre ventas): " +
+        (isNaN(d.msPct) ? "-" : (d.msPct*100).toFixed(2) + " %"),
+      "",
+      "   ¿Qué significa?:",
+      "   - Indica cuánto pueden bajar tus ventas antes de entrar en pérdidas.",
+      "   - Cuanto más grande, más colchón tienes.",
+      "",
+      "4. Comentario didáctico final",
+      "   El punto muerto q⁽❤️⁾ es el 'volumen mínimo para no perder dinero'.",
+      "   A partir de ahí cada unidad vendida empieza a generar beneficio.",
+      "--------------------------------------------------",
+      "Fin del informe básico"
+    ].join("\n");
+
+  } else {
+    informeFinal = [
+      "INFORME AVANZADO DE PUNTO MUERTO, ESTRUCTURA DE COSTES Y DECISIÓN PRODUCIR/COMPRAR",
+      "Empresa / Proyecto: " + empresa,
+      "Grupo / Alumno:     " + alumno,
+      "Fecha:              " + fecha,
+      "--------------------------------------------------",
+      "",
+      "1. Datos de partida",
+      "   • Costes fijos totales (CF): " + safeVal(d.CF) + " €",
+      "   • Precio de venta unitario (P): " + safeVal(d.P) + " €/ud",
+      "   • Coste variable unitario interno (CVu): " + safeVal(d.CVu) + " €/ud",
+      "   • Unidades previstas de venta (Q): " + safeVal(d.Q,0," uds"),
+      "   • Producción máxima declarada: " + safeVal(d.prodMax,0," uds"),
+      "   • Producción real actual: " + safeVal(d.prodReal,0," uds"),
+      "   • Coste compra externa (€/ud): " + safeVal(d.Ccomp_u) + " €/ud",
+      "   • Costes fijos si compro fuera: " + safeVal(d.CF_comp) + " €",
+      "",
+      "2. Punto muerto y resultados actuales",
+      "   • Punto muerto q(❤️): " +
+        (sinSolucionPM
+          ? "sin solución (P ≤ CVu o faltan datos)"
+          : (isNaN(d.qCorazon) ? "-" : d.qCorazon.toFixed(2) + " uds")),
+      "   • Nivel de ventas equivalente (nv): " +
+        (sinSolucionPM
+          ? "sin solución"
+          : (isNaN(d.nv) ? "-" : d.nv.toFixed(2) + " €")),
+      "   • Ingresos totales actuales: " +
+        (isNaN(d.ingresos) ? "-" : d.ingresos.toFixed(2) + " €"),
+      "   • Costes totales actuales: " +
+        (isNaN(d.costesTotales) ? "-" : d.costesTotales.toFixed(2) + " €"),
+      "   • Beneficio actual: " +
+        (isNaN(d.beneficio) ? "-" : d.beneficio.toFixed(2) + " €"),
+      "",
+      "   Interpretación:",
+      situacionPM,
+      "",
+      "   • Margen de seguridad (uds): " +
+        (isNaN(d.msUnits) ? "-" : d.msUnits.toFixed(2) + " uds"),
+      "   • Margen de seguridad (€): " +
+        (isNaN(d.msEuros) ? "-" : d.msEuros.toFixed(2) + " €"),
+      "   • Margen de seguridad (% sobre ventas): " +
+        (isNaN(d.msPct) ? "-" : (d.msPct*100).toFixed(2) + " %"),
+      "",
+      "   Lectura didáctica:",
+      "   - El margen de seguridad indica cuánto pueden bajar tus ventas antes de entrar en pérdidas.",
+      "   - Cuanto más grande es, más 'colchón' financiero tienes.",
+      "",
+      "3. Eficiencia productiva y estructura",
+      "   • Uso de capacidad productiva: " +
+        (isNaN(d.usoCapacidad) ? "-" : (d.usoCapacidad*100).toFixed(2) + " %"),
+      "   • Marcha en vacío (coste de estructura sin utilizar): " +
+        (isNaN(d.marchaVacio) ? "-" : d.marchaVacio.toFixed(2) + " €"),
+      "   • % de costes fijos desperdiciados por capacidad ociosa: " +
+        (isNaN(d.vacioPctSobreCF) ? "-" : (d.vacioPctSobreCF*100).toFixed(2) + " %"),
+      "",
+      "   Interpretación:",
+      "   - Si tu capacidad real está por debajo de la máxima, parte de tus costes fijos se queda infrautilizada.",
+      "   - Ese dinero que pagas sin producir se llama 'marcha en vacío'.",
+      "",
+      "4. Estructura de costes por unidad",
+      "   • Coste fijo medio por unidad (CFMe): " +
+        (isNaN(d.cfme) ? "-" : d.cfme.toFixed(2) + " €/ud"),
+      "   • Coste variable unitario interno (CVu): " +
+        (isNaN(d.CVu) ? "-" : d.CVu.toFixed(2) + " €/ud"),
+      "",
+      "   Interpretación:",
+      textoEstructura,
+      "",
+      "5. Riesgo operativo (apalancamiento operativo)",
+      "   • Grado de apalancamiento operativo (DOL): " +
+        ((typeof d.dol === "number" && isFinite(d.dol) && !isNaN(d.dol))
+          ? d.dol.toFixed(2) : "-"),
+      "",
+      "   Interpretación:",
+      textoDOL,
+      "",
+      "6. Conclusión sobre sostenibilidad",
+      "   Estas métricas permiten ver:",
+      "   a) A partir de qué volumen empiezas a ganar dinero (punto muerto q⁽❤️⁾).",
+      "   b) Cuánto colchón tienes antes de volver a pérdidas (margen de seguridad).",
+      "   c) Si estás pagando estructura que no usas (marcha en vacío).",
+      "   d) Cuán sensible es tu beneficio a cambios de ventas (apalancamiento operativo).",
+      "",
+      "7. Decisión producir vs comprar",
+      textoMakeBuy,
+      "",
+      "   Lectura didáctica:",
+      "   - Comprar fuera suele tener menos costes fijos, pero cada unidad puede salir más cara.",
+      "   - Producir dentro suele tener más costes fijos, pero menor coste variable por unidad.",
+      "   - El punto de indiferencia es el volumen a partir del cual empieza a compensar tener tu propia estructura.",
+      "",
+      "--------------------------------------------------",
+      "Fin del informe avanzado"
+    ].join("\n");
+  }
+
+  document.getElementById("informeTxt").textContent = informeFinal;
+});
+
+/* ================== DESCARGAR INFORME ================== */
+
+document.getElementById("downloadInformeBtn").addEventListener("click", () => {
+  const texto = document.getElementById("informeTxt").textContent;
+  const blob = new Blob([texto], { type: "text/plain;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "informe_punto_muerto.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+});
+
+/* ================== EVENTOS ================== */
+
+document.getElementById("modoBasico").addEventListener("change", () => {
+  actualizarModoVisualizacion();
+  recalcularYRedibujar();
+});
+document.getElementById("modoAvanzado").addEventListener("change", () => {
+  actualizarModoVisualizacion();
+  recalcularYRedibujar();
+});
+
+document.getElementById("calcBtn").addEventListener("click", recalcularYRedibujar);
+
+// Recalcular automáticamente cuando cambian los datos numéricos
+["cf","p","cvu","q","prodMax","prodReal","ccomp","cfComp"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) {
+    el.addEventListener("input", recalcularYRedibujar);
+  }
+});
+
+/* ================== ARRANQUE INICIAL ================== */
+
+window.addEventListener("load", () => {
+  actualizarModoVisualizacion();
+  recalcularYRedibujar();
+});
+</script>
+
 </body>
 </html>
+
+
+
