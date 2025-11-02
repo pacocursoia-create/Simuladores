@@ -2,7 +2,7 @@
 
 Autor: Francisco Mondéjar  
 Licencia: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.es)  
-Repositorio: https://github.com/pacocursoia/Simuladores  
+Repositorio: https://github.com/franmondejar/Simuladores 
 
 
 
